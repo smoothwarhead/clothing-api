@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/app-kerryco-web-api-centralus-dev-001/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsKerrycoSqlDb_417C737338",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/sqlserver-kerryco-001/databases/sqldb-kerryco-001",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:Kerryco:SqlDb"
+    },
+    "secrets1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/app-kerryco-web-api-centralus-dev-001/providers/Microsoft.ServiceLinker/linkers/VaultKey_89FA09B0B2",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/kerryco-vault-dev-001",
+      "type": "secrets.keyVault",
+      "connectionId": "VaultKey",
+      "dynamicId": null
+    }
+  }
+}
