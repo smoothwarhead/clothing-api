@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CloudinaryDotNet;
+using KerryCoAdmin.Api.Entities.Dtos.Requests;
 using KerryCoAdmin.Api.Entities.Dtos.Responses;
 using KerryCoAdmin.Api.Entities.Models;
 using KerryCoAdmin.Api.Interfaces;
@@ -205,9 +206,9 @@ namespace BusinessManagement.Controllers
 
 
 
-        [HttpPut("products/{Id}/edit-product")]
+        [HttpPut("products/edit-product")]
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
-        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductRequest req)
+        public async Task<IActionResult> UpdateProduct([FromBody] ProductUpdateRequest req)
         {
             var bad_request = new InitialAuthResponse()
                     {
@@ -265,10 +266,10 @@ namespace BusinessManagement.Controllers
             {
 
                 //check if the public id existed
-                if (req.ImageUrl.Contains("kerryCo"))
+                if (req.DeleteImage)
                 {
                     // delete the image from cloudinary
-                    var publicId = req.ImageUrl;
+                    var publicId = req.PrevImage;
 
                  
 
