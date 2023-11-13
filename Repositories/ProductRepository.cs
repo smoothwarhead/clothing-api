@@ -88,17 +88,12 @@ namespace KerryCoAdmin.Repositories
 
 
 
-        public async Task<bool> DeleteProduct(string productId)
+        public bool DeleteProduct(Product product)
         {
-            var savedProduct = await _context.Products.FirstOrDefaultAsync(p => productId.ToString() == productId);
 
-            if (savedProduct != null)
-            {
-                _context.Remove(savedProduct);
+                _context.Remove(product);
                 return Save();
-            }
-
-            throw new InvalidOperationException();
+            
 
 
         }

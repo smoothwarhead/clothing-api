@@ -341,6 +341,81 @@ namespace BusinessManagement.Controllers
 
 
 
+        [HttpDelete("products/{Id}")]
+        public async Task<IActionResult> DeleteProduct(string Id)
+        {
+
+            var bad_request = new InitialAuthResponse()
+            {
+                IsAuth = true,
+                StatusType = "error",
+                
+
+            };
+
+            if (Id == null)
+            {
+                bad_request.Message = "No request";
+                return BadRequest(bad_request);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                bad_request.Message = "Bad model state";
+                return BadRequest(bad_request);
+
+
+            }
+
+
+            var savedProduct = await _productRepository.GetProductById(Id);
+
+            if (savedProduct != null)
+            {
+                var deleteProduct = _productRepository.DeleteProduct(savedProduct);
+
+                if (deleteProduct)
+                {
+                    var response = new InitialAuthResponse()
+                    {
+                        IsAuth = true,
+                        StatusType = "success",
+                        Message = "Product deleted successfully",
+
+                    };
+
+                    return Ok(response);
+
+                }
+                else
+                {
+                    var errorResponse = new InitialAuthResponse()
+                    {
+                        IsAuth = true,
+                        StatusType = "error",
+                        Message = "Unable to delete product",
+
+                    };
+
+                    return Ok(errorResponse);
+                }
+
+            }
+            else
+            {
+                var errorResponse = new InitialAuthResponse()
+                {
+                    IsAuth = true,
+                    StatusType = "error",
+                    Message = "This product does not exist",
+
+                };
+
+                return Ok(errorResponse);
+            }
+
+
+        }
 
 
     }
