@@ -29,13 +29,9 @@ namespace KerryCoAdmin.Api.Controllers
         private readonly ITokenGenerator _tokenGenerator;
         private readonly Byte[] _key;
         private readonly DateTime _expirationDate;
-       // private readonly EmailSettings _mailSettings;
+        private readonly EmailSettings _mailSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ISecretService _secretService;
-        private readonly List<VaultSecret> _secrets;
-        private readonly string _apiKey;
-        private readonly string _note;
-        private readonly string _email;
+       
 
 
 
@@ -52,16 +48,14 @@ namespace KerryCoAdmin.Api.Controllers
             _adminRepository = adminRepository;
             _tokenGenerator = tokenGenerator;
             _configuration = configuration;
-            _secretService = secretService;
-            _secrets = _secretService.GetSecrets();
-            _key = Encoding.UTF8.GetBytes(GetInfo.GetASecret("Jwt-secret-dev-001", _secrets));
-            _expirationDate = DateTime.UtcNow.Add(TimeSpan.Parse(GetInfo.GetASecret("Jwt-expiryTimeFrame", _secrets)));
-            //_mailSettings = _configuration.GetSection("SendGrid").Get<EmailSettings>();
+            //_key = Encoding.UTF8.GetBytes(GetInfo.GetASecret("Jwt-secret-dev-001", _secrets));
+            //_expirationDate = DateTime.UtcNow.Add(TimeSpan.Parse(GetInfo.GetASecret("Jwt-expiryTimeFrame", _secrets)));
+
+            _key = Encoding.UTF8.GetBytes(_configuration["JwtConfig:Secret"]);
+            _expirationDate = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration.GetSection("JwtConfig:ExpiryTimeFrame").Value));
+            _mailSettings = _configuration.GetSection("SendGrid").Get<EmailSettings>();
             _roleManager = roleManager;
            
-            _note = GetInfo.GetASecret("Sendgrid-note", _secrets);
-            _apiKey = GetInfo.GetASecret("Sendgrid-key", _secrets);
-            _email = GetInfo.GetASecret("Sendgrid-senderEmail", _secrets);
 
 
 
@@ -189,16 +183,6 @@ namespace KerryCoAdmin.Api.Controllers
 
 
 
-
-                            EmailSettings _mailSettings = new EmailSettings()
-                            {
-                                Key = _apiKey,
-                                Note = _note,
-                                SenderEmail = _email
-
-                            };
-
-
                             var emailSent = EmailService.SendEmail(request.Email, content, plainText, "Account Created", _mailSettings);
 
                             if (emailSent != null)
@@ -315,14 +299,6 @@ namespace KerryCoAdmin.Api.Controllers
 
                     string plainText = "Your OTP";
 
-
-                    EmailSettings _mailSettings = new EmailSettings()
-                    {
-                        Key = _apiKey,
-                        Note = _note,
-                        SenderEmail = _email
-
-                    };
 
 
                     var emailSent = EmailService.SendEmail(user.Email, content, plainText, "OTP Confirmation", _mailSettings);
@@ -534,13 +510,6 @@ namespace KerryCoAdmin.Api.Controllers
                 string plainText = "Your OTP";
 
 
-                EmailSettings _mailSettings = new EmailSettings()
-                {
-                    Key = _apiKey,
-                    Note = _note,
-                    SenderEmail = _email
-
-                };
 
 
                 var emailSent = EmailService.SendEmail(user.Email, token, plainText, "OTP Confirmation", _mailSettings);
@@ -695,12 +664,14 @@ namespace KerryCoAdmin.Api.Controllers
         }
 
 
+        /*
+
         [HttpGet("secrets")]
         public IActionResult GetSecrets()
         {
             var secs = _secretService.GetSecrets();
 
-            var cloud = GetInfo.GetASecret("Cloudinary-apiKey", secs);
+            var cloud = GetInfo.GetASecret("Sendgrid-key", secs);
 
             
             return Ok(cloud);
@@ -708,7 +679,7 @@ namespace KerryCoAdmin.Api.Controllers
         }
 
 
-
+        */
 
 
 

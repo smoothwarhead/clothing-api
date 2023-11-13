@@ -21,25 +21,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var keyVaultEndpoint = new Uri(builder.Configuration["VaultKey"]);
-//var clientId = _configuration["Azure:ClientId"];
-//var clientSecret = _configuration["Azure:ClientSecret"];
-//var tenantId = _configuration["Azure:TenantId"];
-
-//var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
-var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
-
-KeyVaultSecret db = secretClient.GetSecret("Kerryco-SqlDb-dev-001");
-KeyVaultSecret jwt = secretClient.GetSecret("Jwt-secret-dev-001");
 
 
 
 
 
 // for Entity Framework
-//builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Kerryco-SqlDb-dev-001")));
-
-builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(db.Value));
+builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Kerryco-SqlDb-dev-001")));
 
 
 
@@ -63,12 +51,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 //for jwt
 
-//builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
+builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
 
-//var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtConfig:Secret").Value);
-
-var key = Encoding.ASCII.GetBytes(jwt.Value);
-
+var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("JwtConfig:Secret").Value);
 
 var tokenValidationParameter = new TokenValidationParameters()
 {
@@ -120,9 +105,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:3000", "https://clothing-client.vercel.app/")
+        builder.WithOrigins("http://localhost:3000", "https://clothing-client.vercel.app")
         .WithMethods("GET", "POST", "DELETE", "PUT")
         .AllowAnyHeader()
+        .AllowAnyMethod()
         .AllowCredentials();
     });
 

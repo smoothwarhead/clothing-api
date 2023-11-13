@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet;
 using KerryCoAdmin.Api.Entities.Dtos.Responses;
 using KerryCoAdmin.Api.Entities.Models;
 using KerryCoAdmin.Api.Interfaces;
@@ -12,6 +13,7 @@ using KerryCoAdmin.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -27,24 +29,21 @@ namespace BusinessManagement.Controllers
         private readonly IProductRepository _productRepository;
         private readonly IAdminRepository _adminRepository;
         private readonly IMapper _mapper;
-        private readonly ISecretService _secretService;
-        private readonly List<VaultSecret> _secrets;
-        private readonly string _cloudName;
-        private readonly string _apiKey;
-        private readonly string _apiSecret;
+        private readonly IConfiguration _configuration;
+        private readonly CloudinarySettings _cloudinarySettings;
+        
 
 
 
-        public ProductController(IProductRepository productRepository,IAdminRepository adminRepository, IMapper mapper, ISecretService secretService)
+        public ProductController(IConfiguration configuration, IProductRepository productRepository,IAdminRepository adminRepository, IMapper mapper, ISecretService secretService)
         {
             _adminRepository = adminRepository;
             _productRepository = productRepository;
             _mapper = mapper;
-            _secretService = secretService;
-            _secrets = _secretService.GetSecrets();
-            _cloudName = GetInfo.GetASecret("Cloudinary-cloudname", _secrets);
-            _apiKey = GetInfo.GetASecret("Cloudinary-apiKey", _secrets);
-            _apiSecret = GetInfo.GetASecret("Cloudinary-apiSecret", _secrets);
+            _configuration = configuration;
+
+            _cloudinarySettings = _configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
+            
 
         }
 
@@ -76,7 +75,7 @@ namespace BusinessManagement.Controllers
 
 
         [HttpGet("products/product/{id}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
         public async Task<IActionResult> GetProduct(string id)
         {
             var result = await _productRepository.GetProductById(id);
@@ -94,7 +93,7 @@ namespace BusinessManagement.Controllers
 
 
         [HttpPost("{Id}/products/add-product")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
         public async Task<IActionResult> AddProduct(string Id, [FromBody] ProductRequest req)
         {
 
@@ -207,7 +206,7 @@ namespace BusinessManagement.Controllers
 
 
         [HttpPut("products/{Id}/edit-product")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
         public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductRequest req)
         {
             var bad_request = new InitialAuthResponse()
@@ -271,14 +270,9 @@ namespace BusinessManagement.Controllers
                     // delete the image from cloudinary
                     var publicId = req.ImageUrl;
 
-                    CloudinarySettings cloudinarySettings = new CloudinarySettings()
-                    {
-                        CloudName = _cloudName,
-                        ApiKey = _apiKey,
-                        ApiSecret = _apiSecret
-                    };
+                 
 
-                    var removeImage = PhotoService.RemovePhoto(publicId, cloudinarySettings);
+                    var removeImage = PhotoService.RemovePhoto(publicId, _cloudinarySettings);
 
                     if (removeImage)
                     {
