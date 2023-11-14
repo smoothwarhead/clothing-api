@@ -22,11 +22,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var keyVaultEndpoint = new Uri(builder.Configuration["VaultKey"]);
-//var clientId = _configuration["Azure:ClientId"];
-//var clientSecret = _configuration["Azure:ClientSecret"];
-//var tenantId = _configuration["Azure:TenantId"];
 
-//var secretClient = new SecretClient(new Uri(keyVaultEndpoint), new ClientSecretCredential(tenantId, clientId, clientSecret));
 var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
 
 KeyVaultSecret db = secretClient.GetSecret("Kerryco-SqlDb-dev-001");
@@ -123,6 +119,7 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("http://localhost:3000", "https://clothing-client.vercel.app/")
         .WithMethods("GET", "POST", "DELETE", "PUT")
         .AllowAnyHeader()
+        .AllowAnyMethod()
         .AllowCredentials();
     });
 

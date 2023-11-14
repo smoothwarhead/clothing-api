@@ -18,7 +18,7 @@ namespace KerryCoAdmin.Interfaces
         Task<string> CreateProduct(Product product);
     
         
-        Task<bool> DeleteProduct(string productId);
+        bool DeleteProduct(Product product);
         Task<bool> UpdateProduct(string id, Product product);
 
         bool Save();

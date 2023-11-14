@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using KerryCoAdmin.Api.Entities.Dtos.Requests;
 using KerryCoAdmin.Api.Entities.Dtos.Responses;
 using KerryCoAdmin.Api.Entities.Models;
 using KerryCoAdmin.Api.Interfaces;
@@ -206,9 +207,9 @@ namespace BusinessManagement.Controllers
 
 
 
-        [HttpPut("products/{Id}/edit-product")]
+        [HttpPut("products/edit-product")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, Staff")]
-        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductRequest req)
+        public async Task<IActionResult> UpdateProduct([FromBody] ProductUpdateRequest req)
         {
             var bad_request = new InitialAuthResponse()
                     {
@@ -266,10 +267,10 @@ namespace BusinessManagement.Controllers
             {
 
                 //check if the public id existed
-                if (req.ImageUrl.Contains("kerryCo"))
+                if (req.DeleteImage)
                 {
                     // delete the image from cloudinary
-                    var publicId = req.ImageUrl;
+                    var publicId = req.PrevImage;
 
                     CloudinarySettings cloudinarySettings = new CloudinarySettings()
                     {
@@ -345,6 +346,113 @@ namespace BusinessManagement.Controllers
         }
 
 
+
+
+        [HttpDelete("products/{Id}")]
+        public async Task<IActionResult> DeleteProduct(string Id)
+        {
+
+            var bad_request = new InitialAuthResponse()
+            {
+                IsAuth = true,
+                StatusType = "error",
+
+
+            };
+
+            if (Id == null)
+            {
+                bad_request.Message = "No request";
+                return BadRequest(bad_request);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                bad_request.Message = "Bad model state";
+                return BadRequest(bad_request);
+
+
+            }
+
+
+            var savedProduct = await _productRepository.GetProductById(Id);
+
+            if (savedProduct != null)
+            {
+                var productImage = savedProduct.Variations.FirstOrDefault().ImageUrl;
+
+                var deleteProduct = _productRepository.DeleteProduct(savedProduct);
+
+                if (deleteProduct)
+                {
+
+                    CloudinarySettings cloudinarySettings = new CloudinarySettings()
+                    {
+                        CloudName = _cloudName,
+                        ApiKey = _apiKey,
+                        ApiSecret = _apiSecret
+                    };
+
+                    var removeImage = PhotoService.RemovePhoto(productImage, cloudinarySettings);
+
+                    if (removeImage)
+                    {
+                        var response = new InitialAuthResponse()
+                        {
+                            IsAuth = true,
+                            StatusType = "success",
+                            Message = "Product deleted successfully",
+
+                        };
+
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        var errorRes = new InitialAuthResponse()
+                        {
+                            IsAuth = true,
+                            StatusType = "error",
+                            Message = "Unable to delete product image",
+
+                        };
+
+                        return Ok(errorRes);
+
+
+                    }
+
+
+                }
+                else
+                {
+                    var errorResponse = new InitialAuthResponse()
+                    {
+                        IsAuth = true,
+                        StatusType = "error",
+                        Message = "Unable to delete product",
+
+                    };
+
+                    return Ok(errorResponse);
+                }
+
+            }
+            else
+            {
+                var errorResponse = new InitialAuthResponse()
+                {
+                    IsAuth = true,
+                    StatusType = "error",
+                    Message = "This product does not exist",
+
+                };
+
+                return Ok(errorResponse);
+            }
+
+
+        }
 
 
 
